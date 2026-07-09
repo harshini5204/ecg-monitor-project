@@ -1,57 +1,53 @@
-import { useState } from "react";
-import ECGChart from "./ECGChart";
-import ECGToolbar from "./ECGToolbar";
-import type { Patient } from "../types/patient";
-import { useECG } from "../hooks/useECG";
 import { useMonitoring } from "../hooks/useMonitoring";
+import { useECG } from "../hooks/useECG";
+import ECGChart from "./ECGChart";
 
-interface PatientCardProps {
+import type { Patient } from "../types/patient";
+
+interface Props {
   patient: Patient;
 }
 
-function PatientCard({ patient }: PatientCardProps) {
-  const data = useECG(patient.id);
+export default function PatientCard({ patient }: Props) {
+  const { start, stop, sessionId } = useMonitoring();
 
-  const { sessionId, start: startMonitoring, stop } = useMonitoring();
-
-  const [speed, setSpeed] = useState<number>(100);
-
-  const isRunning = Boolean(sessionId);
-
-  const handleStart = () => startMonitoring(patient.id);
-  const handlePause = () => stop();
-  const handleReset = () => {};
+  const ecg = useECG(patient.id);
 
   return (
-    <div className="rounded-xl bg-slate-800 p-4 shadow-lg">
-      <div className="mb-4 flex justify-between">
+    <div className="rounded-xl bg-slate-800 p-5 shadow-lg">
+      <div className="mb-5 flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">{patient.name}</h2>
+          <h2 className="text-3xl font-bold text-white">{patient.name}</h2>
 
-          <p className="text-slate-300">Age : {patient.age}</p>
+          <p className="text-gray-300">Age : {patient.age}</p>
 
-          <p className="text-green-400">{patient.heartRate} BPM</p>
+          <p className="text-2xl text-green-400">72 BPM</p>
         </div>
 
-        <div>
-          <span className="rounded bg-green-600 px-3 py-1 text-white">
-            {patient.status}
-          </span>
-        </div>
+        <span className="rounded bg-green-600 px-4 py-2 text-white">
+          Connected
+        </span>
       </div>
 
-      <ECGToolbar
-        isRunning={isRunning}
-        speed={speed}
-        onStart={handleStart}
-        onPause={handlePause}
-        onReset={handleReset}
-        onSpeedChange={setSpeed}
-      />
+      <div className="mb-4 flex gap-3">
+        <button
+          onClick={() => start(patient.id)}
+          className="rounded bg-green-600 px-4 py-2 text-white"
+        >
+          Start
+        </button>
 
-      <ECGChart data={data} />
+        <button
+          onClick={stop}
+          className="rounded bg-red-600 px-4 py-2 text-white"
+        >
+          Stop
+        </button>
+      </div>
+
+      <div className="h-72">
+        <ECGChart data={ecg} />
+      </div>
     </div>
   );
 }
-
-export default PatientCard;

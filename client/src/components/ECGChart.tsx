@@ -42,8 +42,9 @@ function ECGChart({ data }: ECGChartProps) {
     };
   }, [data]);
 
-  const options: ChartOptions<"line"> = {
+  const options = {
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     plugins: {
       legend: {
@@ -54,14 +55,19 @@ function ECGChart({ data }: ECGChartProps) {
       x: {
         display: false,
       },
+
       y: {
-        min: -1,
-        max: 1,
+        min: -1.2,
+        max: 1.2,
       },
     },
   };
 
-  return <Line data={chartData} options={options} />;
+  return (
+    <div className="h-full">
+      <Line data={chartData} options={options as ChartOptions<"line">} />
+    </div>
+  );
 }
 
 export default ECGChart;

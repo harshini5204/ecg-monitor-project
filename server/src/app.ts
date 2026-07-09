@@ -26,7 +26,16 @@ app.use(express.json());
  * Parse URL Encoded Data
  */
 app.use(express.urlencoded({ extended: true }));
-
+// cache-no-store, no-cache, must-revalidate, proxy-revalidate
+app.use((req, res, next) => {
+  res.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
 /**
  * Request Logger
  */

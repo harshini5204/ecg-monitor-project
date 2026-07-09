@@ -1,43 +1,51 @@
-export interface ECGPoint {
-  timestamp: Date;
-  value: number;
-  lead: number;
+interface PatientECGState {
+  phase: number;
+  heartRate: number;
+  amplitude: number;
+  noise: number;
 }
 
-let time = 0;
+const patientStates = new Map<string, PatientECGState>();
 
-function gaussian(x: number, center: number, width: number, amplitude: number) {
-  return (
-    amplitude * Math.exp(-Math.pow(x - center, 2) / (2 * Math.pow(width, 2)))
-  );
+function getState(patientId: string, heartRate: number) {
+  let state = patientStates.get(patientId);
+
+  if (!state) {
+    state = {
+      phase: Math.random() * Math.PI * 2,
+      heartRate,
+      amplitude: 0.9 + Math.random() * 0.2,
+      noise: 0.005 + Math.random() * 0.01,
+    };
+
+    patientStates.set(patientId, state);
+  }
+
+  return state;
 }
 
-export function generateECGPoint(heartRate = 72): ECGPoint {
-  const beatDuration = 60000 / heartRate;
+export function generateECGPoint(patientId: string, heartRate: number) {
+  const state = getState(patientId, heartRate);
 
-  time += 4;
+  state.phase += (heartRate / 60) * 0.08;
 
-  const phase = time % beatDuration;
+  const x = state.phase % (Math.PI * 2);
 
-  let value = 0;
+  const baseline = Math.sin(x) * 0.01 + (Math.random() - 0.5) * state.noise;
 
-  value += gaussian(phase, beatDuration * 0.2, 18, 0.15);
+  const p = 0.15 * Math.exp(-Math.pow((x - 1.0) / 0.12, 2));
 
-  value += gaussian(phase, beatDuration * 0.38, 5, -0.2);
+  const q = -0.2 * Math.exp(-Math.pow((x - 2.0) / 0.03, 2));
 
-  value += gaussian(phase, beatDuration * 0.4, 4, 1.2);
+  const r = state.amplitude * Math.exp(-Math.pow((x - 2.08) / 0.02, 2));
 
-  value += gaussian(phase, beatDuration * 0.42, 5, -0.35);
+  const s = -0.35 * Math.exp(-Math.pow((x - 2.15) / 0.03, 2));
 
-  value += gaussian(phase, beatDuration * 0.65, 22, 0.35);
-
-  value += Math.sin(time / 1500) * 0.02;
-
-  value += (Math.random() - 0.5) * 0.01;
+  const t = 0.35 * Math.exp(-Math.pow((x - 3.1) / 0.22, 2));
 
   return {
     timestamp: new Date(),
-    value,
     lead: 1,
+    value: baseline + p + q + r + s + t,
   };
 }

@@ -4,7 +4,6 @@ import { prisma } from "./config/prisma";
 import http from "http";
 import { initializeWebSocket } from "./websockets/websockets.server";
 import { initializeWebSocketListener } from "./stream/websocket.listener";
-import { initializeDatabaseListener } from "./stream/database.listener";
 
 async function startServer() {
   try {
@@ -16,8 +15,6 @@ async function startServer() {
     const server = http.createServer(app);
 
     initializeWebSocket(server);
-
-    initializeDatabaseListener();
 
     initializeWebSocketListener();
 
