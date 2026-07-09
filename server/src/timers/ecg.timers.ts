@@ -3,12 +3,18 @@ import { generateECGPoint } from "../generators/ecg.generators";
 import { broadcastECG } from "../websockets/websockets.server";
 
 const activeSessions = new Map<string, NodeJS.Timeout>();
+const patientHeartRates = new Map<string, number>();
 
-export const startECGMonitoring = (
-  patientId: string,
-  sessionId: string,
-  heartRate: number = 72,
-) => {
+function getHeartRate(patientId: string) {
+  if (!patientHeartRates.has(patientId)) {
+    // Generate a random BPM between 65 and 95
+    patientHeartRates.set(patientId, 65 + Math.floor(Math.random() * 30));
+  }
+
+  return patientHeartRates.get(patientId)!;
+}
+
+export const startECGMonitoring = (patientId: string, sessionId: string) => {
   // Prevent duplicate timers
   if (activeSessions.has(sessionId)) {
     return;
@@ -16,9 +22,11 @@ export const startECGMonitoring = (
 
   const interval = setInterval(async () => {
     try {
-      const point = generateECGPoint(heartRate);
+      const bpm = getHeartRate(patientId);
 
-      const sample = await prisma.ecgSample.createMany({
+      const point = generateECGPoint(patientId, bpm);
+
+      await prisma.ecgSample.create({
         data: {
           sessionId,
           timestamp: point.timestamp,
@@ -33,11 +41,8 @@ export const startECGMonitoring = (
         timestamp: point.timestamp,
         lead: point.lead,
         value: point.value,
+        heartRate: bpm,
       });
-
-      console.log(`Session: ${sessionId} ECG: ${point.value.toFixed(3)}`);
-
-      // WebSocket broadcast will come here later
     } catch (error) {
       console.error(error);
     }

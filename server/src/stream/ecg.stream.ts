@@ -7,9 +7,3 @@ export const subscribeECG = (listener: ECGListener) => {
 
   return () => listeners.delete(listener);
 };
-
-export const publishECG = (patientId: string, sample: any) => {
-  listeners.forEach((listener) => {
-    listener(patientId, sample);
-  });
-};
