@@ -40,7 +40,6 @@ model Patient {
   status      PatientStatus @default(ACTIVE)
   createdAt   DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
-
   sessions    EcgSession[]
 
   @@index([status])
@@ -50,16 +49,15 @@ model Patient {
 }
 
 model EcgSession {
-  id        String        @id @default(uuid()) @db.Uuid
-  patientId String        @db.Uuid
-  sessionId String        @unique
-  startedAt DateTime      @default(now()) @db.Timestamptz(3)
-  endedAt   DateTime?     @db.Timestamptz(3)
-  status    SessionStatus @default(ACTIVE)
-  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+  sessionId   String        @id @default(uuid()) @db.Uuid
+  patientId   String        @db.Uuid
+  startedAt   DateTime      @default(now()) @db.Timestamptz(3)
+  endedAt     DateTime?     @db.Timestamptz(3)
+  status      SessionStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
 
-  patient   Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  samples   EcgSample[]
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  samples      EcgSample[]
 
   @@index([patientId, status])
   @@index([startedAt])
@@ -67,14 +65,13 @@ model EcgSession {
 }
 
 model EcgSample {
-  id        String   @id @default(uuid()) @db.Uuid
-  sessionId String   @db.Uuid
-  timestamp DateTime @db.Timestamptz(3)
-  lead      Int
-  value     Float
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-
-  session   EcgSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id          String      @id @default(uuid()) @db.Uuid
+  sessionId   String      @db.Uuid
+  timestamp   DateTime    @db.Timestamptz(3)
+  lead        Int
+  value       Float
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  session     EcgSession  @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
 
   @@index([sessionId, timestamp])
   @@index([sessionId, lead])

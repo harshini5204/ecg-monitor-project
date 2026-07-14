@@ -12,8 +12,6 @@ export function useECG(patientId: string) {
     }),
   );
   const handleMessage = useCallback((sample: ECGPoint) => {
-    console.log("Adding sample:", sample);
-
     setPoints((prev) => {
       const next = [...prev];
 

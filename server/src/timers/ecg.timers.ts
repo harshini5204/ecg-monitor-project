@@ -26,9 +26,13 @@ export const startECGMonitoring = (patientId: string, sessionId: string) => {
 
       const point = generateECGPoint(patientId, bpm);
 
+      const session = await prisma.ecgSession.findUnique({
+        where: { sessionId },
+      });
+
       await prisma.ecgSample.create({
         data: {
-          sessionId,
+          sessionId: session?.sessionId as string,
           timestamp: point.timestamp,
           lead: point.lead,
           value: point.value,
@@ -43,9 +47,7 @@ export const startECGMonitoring = (patientId: string, sessionId: string) => {
         value: point.value,
         heartRate: bpm,
       });
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (error) {}
   }, 100);
 
   activeSessions.set(sessionId, interval);
@@ -64,7 +66,7 @@ export const stopECGMonitoring = async (sessionId: string) => {
 
   await prisma.ecgSession.update({
     where: {
-      id: sessionId,
+      sessionId: sessionId as string,
     },
     data: {
       status: "COMPLETED",

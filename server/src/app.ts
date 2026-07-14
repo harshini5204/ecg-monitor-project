@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 /**
  * Request Logger
  */
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 
 app.use("/api/patients", patientRoutes);
 app.use("/api/ecg", ecgRoutes);

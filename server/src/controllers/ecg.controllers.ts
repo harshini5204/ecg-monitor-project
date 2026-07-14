@@ -45,14 +45,13 @@ export const startMonitoring = async (req: Request, res: Response) => {
     // Create new session
     const session = await prisma.ecgSession.create({
       data: {
-        sessionId: crypto.randomUUID(),
         patientId,
         status: "ACTIVE",
       },
     });
 
     // Start ECG generation
-    startECGMonitoring(patient.id, session.id);
+    startECGMonitoring(patient.id, session.sessionId);
 
     return res.status(201).json({
       success: true,
@@ -81,7 +80,7 @@ export const stopMonitoring = async (req: Request, res: Response) => {
 
     const session = await prisma.ecgSession.findUnique({
       where: {
-        id: sessionId,
+        sessionId: sessionId as string,
       },
     });
 
