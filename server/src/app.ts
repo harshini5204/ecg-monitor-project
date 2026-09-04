@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import patientRoutes from "./routes/patient.routes";
 import ecgRoutes from "./routes/ecg.routes";
+import { CORS_ORIGIN } from "./config/env";
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(helmet());
 /**
  * Enable CORS
  */
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGIN }));
 
 /**
  * Parse JSON Body
@@ -39,7 +40,9 @@ app.use((req, res, next) => {
 /**
  * Request Logger
  */
-// app.use(morgan("dev"));
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 
 app.use("/api/patients", patientRoutes);
 app.use("/api/ecg", ecgRoutes);

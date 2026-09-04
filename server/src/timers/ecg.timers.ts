@@ -1,9 +1,11 @@
 import { prisma } from "../config/prisma";
-import { generateECGPoint } from "../generators/ecg.generators";
+import { generateECGPoint, clearPatientState } from "../generators/ecg.generators";
 import { broadcastECG } from "../websockets/websockets.server";
+import { logger } from "../utils/logger";
 
 const activeSessions = new Map<string, NodeJS.Timeout>();
 const patientHeartRates = new Map<string, number>();
+const sessionPatients = new Map<string, string>();
 
 function getHeartRate(patientId: string) {
   if (!patientHeartRates.has(patientId)) {
@@ -20,19 +22,17 @@ export const startECGMonitoring = (patientId: string, sessionId: string) => {
     return;
   }
 
+  sessionPatients.set(sessionId, patientId);
+
   const interval = setInterval(async () => {
     try {
       const bpm = getHeartRate(patientId);
 
       const point = generateECGPoint(patientId, bpm);
 
-      const session = await prisma.ecgSession.findUnique({
-        where: { sessionId },
-      });
-
       await prisma.ecgSample.create({
         data: {
-          sessionId: session?.sessionId as string,
+          sessionId,
           timestamp: point.timestamp,
           lead: point.lead,
           value: point.value,
@@ -47,7 +47,9 @@ export const startECGMonitoring = (patientId: string, sessionId: string) => {
         value: point.value,
         heartRate: bpm,
       });
-    } catch (error) {}
+    } catch (error) {
+      logger.error("ECG tick failed", { sessionId, patientId, error });
+    }
   }, 100);
 
   activeSessions.set(sessionId, interval);
@@ -63,6 +65,14 @@ export const stopECGMonitoring = async (sessionId: string) => {
   clearInterval(timer);
 
   activeSessions.delete(sessionId);
+
+  const patientId = sessionPatients.get(sessionId);
+  sessionPatients.delete(sessionId);
+
+  if (patientId) {
+    patientHeartRates.delete(patientId);
+    clearPatientState(patientId);
+  }
 
   await prisma.ecgSession.update({
     where: {

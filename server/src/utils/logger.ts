@@ -1,4 +1,4 @@
-type LogArgument = string | number | boolean | null | undefined | object;
+type LogArgument = unknown;
 
 function write(
   level: string,

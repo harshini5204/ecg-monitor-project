@@ -11,6 +11,8 @@ export function useECG(patientId: string) {
       timestamp: 0,
     }),
   );
+  const [heartRate, setHeartRate] = useState<number | null>(null);
+
   const handleMessage = useCallback((sample: ECGPoint) => {
     setPoints((prev) => {
       const next = [...prev];
@@ -20,12 +22,16 @@ export function useECG(patientId: string) {
 
       return next;
     });
+
+    if (typeof sample.heartRate === "number") {
+      setHeartRate(sample.heartRate);
+    }
   }, []);
 
-  useWebSocket({
+  const status = useWebSocket({
     patientId,
     onMessage: handleMessage,
   });
 
-  return points;
+  return { points, heartRate, status };
 }

@@ -4,6 +4,7 @@ export interface ECGPoint {
   lead: number;
   patientId: string;
   sessionId: string;
+  heartRate?: number;
 }
 
 export interface PatientECG {

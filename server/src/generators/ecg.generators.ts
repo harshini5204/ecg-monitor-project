@@ -24,6 +24,10 @@ function getState(patientId: string, heartRate: number) {
   return state;
 }
 
+export function clearPatientState(patientId: string) {
+  patientStates.delete(patientId);
+}
+
 export function generateECGPoint(patientId: string, heartRate: number) {
   const state = getState(patientId, heartRate);
 

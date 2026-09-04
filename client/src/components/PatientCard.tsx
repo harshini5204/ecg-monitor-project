@@ -8,10 +8,22 @@ interface Props {
   patient: Patient;
 }
 
-export default function PatientCard({ patient }: Props) {
-  const { start, stop, sessionId } = useMonitoring();
+const STATUS_LABEL: Record<string, string> = {
+  connected: "Connected",
+  connecting: "Connecting...",
+  disconnected: "Disconnected",
+};
 
-  const ecg = useECG(patient.id);
+const STATUS_CLASS: Record<string, string> = {
+  connected: "bg-green-600",
+  connecting: "bg-yellow-600",
+  disconnected: "bg-red-600",
+};
+
+export default function PatientCard({ patient }: Props) {
+  const { start, stop } = useMonitoring();
+
+  const { points, heartRate, status } = useECG(patient.id);
 
   return (
     <div className="rounded-xl bg-slate-800 p-5 shadow-lg">
@@ -21,11 +33,15 @@ export default function PatientCard({ patient }: Props) {
 
           <p className="text-gray-300">Age : {patient.age}</p>
 
-          <p className="text-2xl text-green-400">72 BPM</p>
+          <p className="text-2xl text-green-400">
+            {heartRate !== null ? `${heartRate} BPM` : "-- BPM"}
+          </p>
         </div>
 
-        <span className="rounded bg-green-600 px-4 py-2 text-white">
-          Connected
+        <span
+          className={`rounded px-4 py-2 text-white ${STATUS_CLASS[status]}`}
+        >
+          {STATUS_LABEL[status]}
         </span>
       </div>
 
@@ -46,7 +62,7 @@ export default function PatientCard({ patient }: Props) {
       </div>
 
       <div className="h-72">
-        <ECGChart data={ecg} />
+        <ECGChart data={points} />
       </div>
     </div>
   );
