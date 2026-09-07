@@ -4,7 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import patientRoutes from "./routes/patient.routes";
 import ecgRoutes from "./routes/ecg.routes";
-import { CORS_ORIGIN } from "./config/env";
+import { CORS_ORIGINS } from "./config/env";
 
 const app = express();
 
@@ -14,9 +14,19 @@ const app = express();
 app.use(helmet());
 
 /**
- * Enable CORS
+ * Enable CORS — allow any of the configured dev/prod origins
  */
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || CORS_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+  }),
+);
 
 /**
  * Parse JSON Body
