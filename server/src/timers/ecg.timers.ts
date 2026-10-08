@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma";
 import { generateECGPoint } from "../generators/ecg.generators";
 import { broadcastECG } from "../websockets/websockets.server";
+import { logger } from "../utils/logger";
 
 const activeSessions = new Map<string, NodeJS.Timeout>();
 
@@ -18,8 +19,9 @@ export const startECGMonitoring = (
     try {
       const point = generateECGPoint(heartRate);
 
-      const sample = await prisma.ecgSample.createMany({
+      await prisma.ecgSample.create({
         data: {
+          id: crypto.randomUUID(),
           sessionId,
           timestamp: point.timestamp,
           lead: point.lead,
@@ -35,11 +37,12 @@ export const startECGMonitoring = (
         value: point.value,
       });
 
-      console.log(`Session: ${sessionId} ECG: ${point.value.toFixed(3)}`);
-
-      // WebSocket broadcast will come here later
     } catch (error) {
-      console.error(error);
+      logger.error("ECG sample processing failed", {
+        sessionId,
+        patientId,
+        error,
+      });
     }
   }, 100);
 
@@ -59,7 +62,7 @@ export const stopECGMonitoring = async (sessionId: string) => {
 
   await prisma.ecgSession.update({
     where: {
-      id: sessionId,
+      sessionId,
     },
     data: {
       status: "COMPLETED",
