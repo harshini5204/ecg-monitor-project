@@ -9,7 +9,6 @@ import type { Patient } from "../types/patient";
 import { useECG } from "../hooks/useECG";
 
 export default function Dashboard() {
-  console.log("Dashboard Render");
   const { patients } = usePatients();
 
   const { start, stop, sessionId } = useMonitoring();
@@ -18,8 +17,7 @@ export default function Dashboard() {
 
   // Live ECG data
   const ecgData = useECG(selectedPatient?.id ?? "");
-  console.log("ECG Data:", ecgData);
-  console.log("ECG Data Length:", ecgData.length);
+
   return (
     <div className="grid h-screen grid-cols-12">
       {/* Patient List */}

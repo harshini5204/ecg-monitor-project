@@ -11,8 +11,13 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -24,14 +29,12 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.2.0",
-    "morgan": "^1.11.0",
     "prisma": "^6.16.2",
     "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.0",
     "@types/ws": "^8.18.1",
     "ts-node-dev": "^2.0.0",

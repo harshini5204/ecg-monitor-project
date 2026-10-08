@@ -5,13 +5,14 @@ import http from "http";
 import { initializeWebSocket } from "./websockets/websockets.server";
 import { initializeWebSocketListener } from "./stream/websocket.listener";
 import { initializeDatabaseListener } from "./stream/database.listener";
+import { logger } from "./utils/logger";
 
 async function startServer() {
   try {
     // Test database connection
     await prisma.$connect();
 
-    console.log("✅ Connected to PostgreSQL");
+    logger.info("Connected to PostgreSQL");
 
     const server = http.createServer(app);
 
@@ -22,11 +23,13 @@ async function startServer() {
     initializeWebSocketListener();
 
     server.listen(PORT, () => {
-      console.log(`🚀 Server running on ${PORT}`);
+      logger.info("Server started", { port: PORT });
     });
   } catch (error) {
-    console.error("❌ Failed to start server");
-    console.error(error);
+    logger.error(
+      "Failed to start server",
+      error instanceof Error ? error : String(error),
+    );
 
     process.exit(1);
   }

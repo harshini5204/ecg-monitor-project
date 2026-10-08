@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
+import type { ECGPoint } from "../types/ecg";
 
 interface UseWebSocketProps {
   patientId: string;
-  onMessage: (sample: any) => void;
+  onMessage: (sample: ECGPoint) => void;
 }
 
 export function useWebSocket({ patientId, onMessage }: UseWebSocketProps) {
@@ -10,7 +11,9 @@ export function useWebSocket({ patientId, onMessage }: UseWebSocketProps) {
 
   const callbackRef = useRef(onMessage);
 
-  callbackRef.current = onMessage;
+  useEffect(() => {
+    callbackRef.current = onMessage;
+  }, [onMessage]);
 
   useEffect(() => {
     if (!patientId) return;
@@ -29,10 +32,23 @@ export function useWebSocket({ patientId, onMessage }: UseWebSocketProps) {
     };
 
     socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
+      let message: unknown;
 
-      if (message.type === "ECG_SAMPLE") {
-        callbackRef.current(message.data);
+      try {
+        message = JSON.parse(event.data);
+      } catch (error) {
+        console.error("Failed to parse WebSocket message", error);
+        return;
+      }
+
+      if (
+        typeof message === "object" &&
+        message !== null &&
+        "type" in message &&
+        message.type === "ECG_SAMPLE" &&
+        "data" in message
+      ) {
+        callbackRef.current(message.data as ECGPoint);
       }
     };
 
