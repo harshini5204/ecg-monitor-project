@@ -12,7 +12,7 @@ export function useMonitoring() {
     try {
       const response = await startMonitoring(patientId);
 
-      setSessionId(response.data.id);
+      setSessionId(response.data.sessionId);
 
       return response.data;
     } finally {
